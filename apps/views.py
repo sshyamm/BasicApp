@@ -1,4 +1,4 @@
-from django.shortcuts import render  # Import render function from Django
+from django.shortcuts import render, get_object_or_404  # Import render function from Django
 from rest_framework import status  # Import status codes from Django REST Framework
 from rest_framework.response import Response  # Import Response class from Django REST Framework
 from rest_framework import viewsets  # Import viewsets from Django REST Framework
@@ -39,3 +39,16 @@ class CoinSearchView(APIView):
         # Serialize the filtered queryset
         serializer = CoinSerializer(coins, many=True, context={'request': request})
         return Response(serializer.data)
+
+def coins_table(request):
+    # Retrieve data from the Coin model
+    coins = Coin.objects.all()
+
+    # Render the HTML template and pass the data to it
+    return render(request, 'coins_table.html', {'coins': coins})
+def coin_details(request, coin_id):
+    # Retrieve the coin object with the specified ID
+    coin = get_object_or_404(Coin, pk=coin_id)
+
+    # Render the HTML template for coin details and pass the coin object to it
+    return render(request, 'coin_details.html', {'coin': coin})

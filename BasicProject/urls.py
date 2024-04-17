@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from apps.views import CoinViewSet, CoinSearchView
+from apps.views import CoinViewSet, CoinSearchView, coins_table, coin_details
 
 # Create a router for registering viewsets
 router = routers.DefaultRouter()
@@ -34,6 +34,8 @@ urlpatterns = [
     # API endpoints for coins using the router
     path('api/', include(router.urls)),
     path('coins/search/<path:path_params>/', CoinSearchView.as_view(), name='coin-search'),
+    path('coins/', coins_table, name='coins-table'),  # URL for the coins table HTML page
+    path('coin/<int:coin_id>/', coin_details, name='coin-details'),  # URL for the coin details page
 ]
 
 # Serve media files in DEBUG mode
