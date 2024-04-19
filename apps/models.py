@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Coin(models.Model):
     # Define choices for coin status
@@ -22,3 +23,12 @@ class Coin(models.Model):
 
     def __str__(self):
         return self.coin_name  # Return the coin name as its string representation
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    website = models.URLField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.user.username  # Return the username as the string representation

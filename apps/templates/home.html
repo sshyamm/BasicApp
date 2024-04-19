@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Welcome to Our Website</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <h3>Hello, {{ user.username }}!!</h3>
+                    {% else %}
+                    <h3>Hello, Guest!!</h3>
+                    {% endif %}
+                    <p class="mt-3">Thank you for visiting our site. We're glad to have you here!</p>
+                    <p>Explore our content and discover what we have to offer.</p>
+                    <div class="text-center mt-4">
+                        {% if user.is_authenticated %}
+                        <a href="{% url "apps:logout" %}" class="btn btn-danger btn-lg">Logout</a>
+                        {% else %}
+                        <a href="{% url "apps:login" %}" class="btn btn-primary btn-lg">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

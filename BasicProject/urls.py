@@ -36,8 +36,8 @@ urlpatterns = [
     path('coins/search/<path:path_params>/', CoinSearchView.as_view(), name='coin-search'),
     path('coins/', coins_table, name='coins-table'),  # URL for the coins table HTML page
     path('coin/<int:coin_id>/', coin_details, name='coin-details'),  # URL for the coin details page
-]
-
+    path("", include(("apps.urls", "apps"), "apps")),
+] 
 # Serve media files in DEBUG mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
