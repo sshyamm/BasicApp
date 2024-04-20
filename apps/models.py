@@ -20,6 +20,7 @@ class Coin(models.Model):
     coin_weight = models.FloatField()  # Float field for coin weight
     starting_bid = models.FloatField()  # Float field for starting bid
     coin_status = models.CharField(max_length=50, choices=STATUS_CHOICES)  # Char field with choices for coin status
+    created_by_id = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.coin_name  # Return the coin name as its string representation

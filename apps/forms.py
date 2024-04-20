@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, Coin
 
 class ProfileForm(forms.ModelForm):
     username = forms.CharField(max_length=150, required=False)
@@ -32,3 +32,9 @@ class ProfileForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+
+class CoinForm(forms.ModelForm):
+    class Meta:
+        model = Coin
+        fields = ['coin_image', 'coin_name', 'coin_desc', 'coin_year', 'coin_country', 'coin_material', 'coin_weight', 'starting_bid', 'coin_status']
+

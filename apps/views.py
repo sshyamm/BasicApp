@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status  # Import status codes from Django REST Framework
 from rest_framework.response import Response  # Import Response class from Django REST Framework
 from rest_framework import viewsets  # Import viewsets from Django REST Framework
-from .models import Coin  # Import the Coin model
+from .models import Coin, Profile  # Import the Coin model
 from .serializers import CoinSerializer  # Import the CoinSerializer
 from rest_framework.views import APIView
 import re
@@ -15,8 +15,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse
-from .models import Profile
-from .forms import ProfileForm
+from .forms import ProfileForm, CoinForm
 
 class CoinViewSet(viewsets.ModelViewSet):  # Define a viewset for the Coin model
     queryset = Coin.objects.all()  # Define the queryset to fetch all coin objects
@@ -65,14 +64,39 @@ def coin_details(request, coin_id):
     return render(request, 'coin_details.html', {'coin': coin})
 
 def home(request):
-    return render(request, "home.html", {})
+    # Get the logged-in user's ID
+    user_id = request.user.id
+
+    # Filter the coins based on the logged-in user's ID
+    coins = Coin.objects.filter(created_by_id=user_id)
+
+    return render(request, 'home.html', {'coins': coins})
+
+@login_required
+def create_coin(request):
+    if request.method == 'POST':
+        form = CoinForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Get the logged-in user
+            logged_in_user = request.user
+
+            # Assign the logged-in user's ID to the created_by_id field of the coin
+            coin = form.save(commit=False)
+            coin.created_by_id = logged_in_user.id
+            coin.save()
+
+            messages.success(request, 'Coin created successfully!')
+            return redirect(reverse("apps:home"))
+    else:
+        form = CoinForm()
+    return render(request, 'create_coin.html', {'form': form})
 
 def authView(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST or None)
         if form.is_valid():
             form.save()
-            return redirect(reverse("apps:login"))  # Use reverse to dynamically generate the URL
+            return redirect(reverse("apps:login")) 
     else:
         form = UserCreationForm()
     return render(request, "registration/signup.html", {"form": form})

@@ -27,7 +27,13 @@
                     {% for coin in coins %}
                     <tr>
                         <td>{{ coin.coin_name }}</td>
-                        <td><img src="{{ coin.coin_image.url }}" alt="{{ coin.coin_name }}"></td>
+                        <td>
+                            {% if coin.coin_image %}
+                            <img src="{{ coin.coin_image.url }}" alt="{{ coin.coin_name }}" style="max-width: 100px;">
+                            {% else %}
+                                No Image
+                            {% endif %}
+                        </td>
                         <td>{{ coin.coin_desc }}</td>
                         <td>{{ coin.coin_year }}</td>
                         <td>{{ coin.coin_country }}</td>
