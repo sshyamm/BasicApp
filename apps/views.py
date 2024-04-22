@@ -64,11 +64,12 @@ def coin_details(request, coin_id):
     return render(request, 'coin_details.html', {'coin': coin})
 
 def home(request):
-    # Get the logged-in user's ID
+    '''# Get the logged-in user's ID
     user_id = request.user.id
 
     # Filter the coins based on the logged-in user's ID
-    coins = Coin.objects.filter(created_by_id=user_id)
+    coins = Coin.objects.filter(created_by_id=user_id)'''
+    coins = Coin.objects.all()
 
     return render(request, 'home.html', {'coins': coins})
 
