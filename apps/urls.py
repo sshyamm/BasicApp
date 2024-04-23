@@ -2,7 +2,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from apps.views import authView, home, custom_password_change, custom_password_change_done
 from django.urls import reverse_lazy
-from .views import view_profile, edit_profile, create_coin
+from .views import view_profile, edit_profile, create_coin, clear_search_history
 
 app_name = 'apps'
 
@@ -15,4 +15,6 @@ urlpatterns = [
     path("profile/", view_profile, name="view_profile"),
     path("profile/edit/", edit_profile, name="edit_profile"),
     path("create-coin/", create_coin, name="create_coin"),
+    path("clear-search-history/<int:search_history_id>/", clear_search_history, name="clear_search_history"),
+
 ]

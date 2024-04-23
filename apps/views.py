@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status  # Import status codes from Django REST Framework
 from rest_framework.response import Response  # Import Response class from Django REST Framework
 from rest_framework import viewsets  # Import viewsets from Django REST Framework
-from .models import Coin, Profile  # Import the Coin model
+from .models import Coin, Profile, SearchHistory  # Import the Coin model
 from .serializers import CoinSerializer  # Import the CoinSerializer
 from rest_framework.views import APIView
 import re
@@ -16,6 +16,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse
 from .forms import ProfileForm, CoinForm
+from django.db.models import F
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class CoinViewSet(viewsets.ModelViewSet):  # Define a viewset for the Coin model
     queryset = Coin.objects.all()  # Define the queryset to fetch all coin objects
@@ -50,12 +52,15 @@ class CoinSearchView(APIView):
         serializer = CoinSerializer(coins, many=True, context={'request': request})
         return Response(serializer.data)
 
+@login_required
 def coins_table(request):
     # Retrieve data from the Coin model
     coins = Coin.objects.all()
 
     # Render the HTML template and pass the data to it
     return render(request, 'coins_table.html', {'coins': coins})
+
+@login_required
 def coin_details(request, coin_id):
     # Retrieve the coin object with the specified ID
     coin = get_object_or_404(Coin, pk=coin_id)
@@ -64,14 +69,58 @@ def coin_details(request, coin_id):
     return render(request, 'coin_details.html', {'coin': coin})
 
 def home(request):
-    '''# Get the logged-in user's ID
-    user_id = request.user.id
+    if request.user.is_authenticated:
+        search_params = {}
+        coins_list = Coin.objects.all().order_by('-coin_id')
 
-    # Filter the coins based on the logged-in user's ID
-    coins = Coin.objects.filter(created_by_id=user_id)'''
-    coins = Coin.objects.all()
+        if request.method == 'POST':
+            # Handle search functionality and store search history
+            for key in request.POST:
+                if key != 'csrfmiddlewaretoken':
+                    value = request.POST[key]
+                    if value:
+                        search_params[key] = value
+                        # Save search history to the database
+                        SearchHistory.objects.create(user=request.user, search_text=f'{key.capitalize()}: {value}')
 
-    return render(request, 'home.html', {'coins': coins})
+            # Filter coins based on search parameters
+            for key, value in search_params.items():
+                coins_list = coins_list.filter(**{key: value})
+
+        paginator = Paginator(coins_list, 10)  # Change 10 to the desired number of items per page
+
+        page = request.GET.get('page')
+        try:
+            coins = paginator.page(page)
+        except PageNotAnInteger:
+            coins = paginator.page(1)
+        except EmptyPage:
+            coins = paginator.page(paginator.num_pages)
+
+        # Retrieve search history for the current user
+        search_history = SearchHistory.objects.filter(user=request.user).order_by('-timestamp')
+
+        return render(request, 'home.html', {'coins': coins, 'search_history': search_history})
+    else:
+        return render(request, 'home.html', {})
+
+
+
+@login_required
+def clear_search_history(request, search_history_id):
+    # Retrieve the search history item to delete
+    search_history_item = get_object_or_404(SearchHistory, pk=search_history_id)
+
+    # Check if the search history item belongs to the current user
+    if search_history_item.user == request.user:
+        # Delete the search history item
+        search_history_item.delete()
+        messages.success(request, 'Search history item deleted successfully!')
+    else:
+        messages.error(request, 'You do not have permission to delete this search history item.')
+
+    # Redirect back to the home page or any other desired page
+    return redirect('apps:home')
 
 @login_required
 def create_coin(request):

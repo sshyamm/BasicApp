@@ -33,3 +33,8 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username  # Return the username as the string representation
+
+class SearchHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    search_text = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
