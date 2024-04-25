@@ -2,7 +2,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from apps.views import authView, home, custom_password_change, custom_password_change_done
 from django.urls import reverse_lazy
-from .views import view_profile, edit_profile, create_coin, clear_search_history
+from .views import view_profile, edit_profile, create_coin, clear_search_history, edit_coin
 
 app_name = 'apps'
 

@@ -18,7 +18,7 @@
                                 <p class="card-text"><strong>Coin Status:</strong> {{ coin.coin_status }}</p>
                                 <a href="{% url 'apps:home' %}" class="btn btn-secondary">Back to Home</a>
                                 {% if request.user.id == coin.created_by_id %}
-                                <a href="#" class="btn btn-primary">Edit Coin</a>
+                                <a href="{% url 'edit_coin' coin_id=coin.coin_id %}" class="btn btn-primary">Edit Coin</a>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">

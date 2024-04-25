@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="card mt-5">
+          <div class="card-body">
+            <h3 class="card-title" style="font-weight: bold;">Edit Coin <a href="{% url 'coin-details' coin_id=coin.pk %}" class="btn btn-warning">Return</a></h3>
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% bootstrap_form form %}
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

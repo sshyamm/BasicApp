@@ -19,6 +19,26 @@ from .forms import ProfileForm, CoinForm
 from django.db.models import F
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+@login_required
+def edit_coin(request, coin_id):
+    coin = get_object_or_404(Coin, pk=coin_id)
+
+    if request.user.id != coin.created_by_id:
+        return redirect('apps:home')
+
+    if request.method == 'POST':
+        form = CoinForm(request.POST, request.FILES, instance=coin)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coin updated successfully!')
+            return redirect(reverse('coin-details', kwargs={'coin_id': coin_id}))
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CoinForm(instance=coin)
+    
+    return render(request, 'edit_coin.html', {'form': form, 'coin': coin})
+
 class CoinViewSet(viewsets.ModelViewSet):  # Define a viewset for the Coin model
     queryset = Coin.objects.all()  # Define the queryset to fetch all coin objects
     serializer_class = CoinSerializer  # Specify the serializer class to use for the Coin model
@@ -68,6 +88,8 @@ def coin_details(request, coin_id):
     # Render the HTML template for coin details and pass the coin object to it
     return render(request, 'coin_details.html', {'coin': coin})
 
+from django.db import models
+
 def home(request):
     if request.user.is_authenticated:
         search_params = {}
@@ -79,13 +101,28 @@ def home(request):
                 if key != 'csrfmiddlewaretoken':
                     value = request.POST[key]
                     if value:
-                        search_params[key] = value
+                        # Get the field object from the Coin model
+                        field_object = Coin._meta.get_field(key)
+                        # Check if the field is an integer or number field
+                        if isinstance(field_object, (models.IntegerField, models.DecimalField, models.FloatField)):
+                            try:
+                                # Convert the value to the appropriate type
+                                value = field_object.to_python(value)
+                                # For integer and number fields, perform exact match
+                                search_params[key] = value
+                            except ValueError:
+                                # Handle the case where the value cannot be converted to the appropriate type
+                                messages.error(request, f'Invalid value for {key}. Please enter a valid number.')
+                                return redirect('apps:home')
+                        else:
+                            # Use __icontains for partial matching for non-integer fields
+                            search_params[key + '__icontains'] = value
+                        
                         # Save search history to the database
                         SearchHistory.objects.create(user=request.user, search_text=f'{key.capitalize()}: {value}')
 
             # Filter coins based on search parameters
-            for key, value in search_params.items():
-                coins_list = coins_list.filter(**{key: value})
+            coins_list = coins_list.filter(**search_params)
 
         paginator = Paginator(coins_list, 10)  # Change 10 to the desired number of items per page
 
@@ -136,7 +173,7 @@ def create_coin(request):
             coin.save()
 
             messages.success(request, 'Coin created successfully!')
-            return redirect(reverse("apps:home"))
+            return redirect(reverse('coin-details', kwargs={'coin_id': coin.pk}))
     else:
         form = CoinForm()
     return render(request, 'create_coin.html', {'form': form})
