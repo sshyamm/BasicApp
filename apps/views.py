@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status  # Import status codes from Django REST Framework
 from rest_framework.response import Response  # Import Response class from Django REST Framework
 from rest_framework import viewsets  # Import viewsets from Django REST Framework
-from .models import Coin, Profile, SearchHistory  # Import the Coin model
+from .models import Coin, Profile, SearchHistory, CartItem  # Import the Coin model
 from .serializers import CoinSerializer  # Import the CoinSerializer
 from rest_framework.views import APIView
 import re
@@ -18,6 +18,52 @@ from django.urls import reverse
 from .forms import ProfileForm, CoinForm
 from django.db.models import F
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+@login_required
+def save_changes(request):
+    if request.method == 'POST':
+        for key, value in request.POST.items():
+            if key.startswith('quantity_'):
+                item_id = int(key.split('_')[1])
+                quantity = int(value)
+                cart_item = CartItem.objects.get(pk=item_id)
+                cart_item.quantity = quantity
+                cart_item.save()
+                messages.success(request, 'Changes saved successfully!')
+        return redirect('cart')  # Assuming 'cart' is the name of the URL pattern for the cart page
+    else:
+        # Handle GET request (if needed)
+        pass
+
+@login_required
+def remove_item(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id)
+    item.delete()
+    messages.success(request, 'Item removed successfully!')
+    return redirect('cart')
+
+@login_required
+def cart(request):
+    user = request.user
+    cart_items = CartItem.objects.filter(user=user)
+    return render(request, 'cart.html', {'cart_items': cart_items})
+
+@login_required
+def add_to_cart(request, coin_id):
+    if request.method == 'POST':
+        # Get the selected coin
+        coin = Coin.objects.get(pk=coin_id)
+        # Get the current user
+        user = request.user
+        # Create a CartItem object
+        cart_item = CartItem.objects.create(user=user, coin=coin)
+        # Redirect to the cart page
+        messages.success(request, 'Your item added to the cart!')
+        return redirect('cart')
+    else:
+        # Handle GET request (if needed)
+        pass
+
 
 @login_required
 def edit_coin(request, coin_id):
@@ -183,6 +229,7 @@ def authView(request):
         form = UserCreationForm(request.POST or None)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Account created successfully!. Please login with your credentials.')
             return redirect(reverse("apps:login")) 
     else:
         form = UserCreationForm()

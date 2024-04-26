@@ -53,6 +53,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+context_processors: [
+    'django.contrib.messages.context_processors.messages',
+]
+
 ROOT_URLCONF = 'BasicProject.urls'
 
 TEMPLATES = [

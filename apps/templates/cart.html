@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 font-weight-bold">Shopping Cart <a href="{% url "apps:home" %}" class="btn btn-warning">Return</a></h1>
+    <div class="row">
+        <div>&nbsp;</div>
+        <div class="col-md-8">
+            {% bootstrap_messages %}
+            {% if cart_items %}
+            <form action="{% url 'save_changes' %}" method="post">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr class="text-center">
+                            <th scope="col">#</th>
+                            <th scope="col">Coin Name</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                        <tr class="text-center">
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ item.coin.coin_name }}</td>
+                            <td>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <button class="btn btn-outline-danger" type="button" onclick="decrementQuantity({{ item.id }})">-</button>
+                                    </div>
+                                    <input type="text" class="form-control text-center font-weight-bold" name="quantity_{{ item.id }}" id="quantity_{{ item.id }}" value="{{ item.quantity }}" readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-success" type="button" onclick="incrementQuantity({{ item.id }})">+</button>
+                                    </div>
+                                </div>
+                            </td>                            
+                            <td>
+                                <a href="{% url 'remove_item' item.id %}" class="btn btn-danger btn-sm">Remove</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="#" class="btn btn-success">Checkout</a>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                There are no items in your shopping cart.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function incrementQuantity(itemId) {
+        var inputField = document.getElementById('quantity_' + itemId);
+        var currentValue = parseInt(inputField.value);
+        if (!isNaN(currentValue)) {
+            inputField.value = currentValue + 1;
+        }
+    }
+
+    function decrementQuantity(itemId) {
+        var inputField = document.getElementById('quantity_' + itemId);
+        var currentValue = parseInt(inputField.value);
+        if (!isNaN(currentValue) && currentValue > 1) {
+            inputField.value = currentValue - 1;
+        }
+    }
+</script>
+{% endblock content %}

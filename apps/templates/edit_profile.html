@@ -6,7 +6,7 @@
       <div class="col-md-10">
         <div class="card mt-5">
           <div class="card-body">
-            <h3 class="card-title" style="font-weight: bold;">Edit Your Details</h3>
+            <h3 class="card-title" style="font-weight: bold;">Edit Your Details <a href="{% url "apps:view_profile" %}" class="btn btn-warning">Return</a></h3>
             <form method="POST">
               {% csrf_token %}
               {% bootstrap_form form %}
