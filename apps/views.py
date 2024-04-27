@@ -28,8 +28,9 @@ def save_changes(request):
                 quantity = int(value)
                 cart_item = CartItem.objects.get(pk=item_id)
                 cart_item.quantity = quantity
+                cart_item.price = cart_item.coin.rate * quantity
                 cart_item.save()
-                messages.success(request, 'Changes saved successfully!')
+        messages.success(request, 'Changes saved successfully!')
         return redirect('cart')  # Assuming 'cart' is the name of the URL pattern for the cart page
     else:
         # Handle GET request (if needed)
@@ -46,7 +47,14 @@ def remove_item(request, item_id):
 def cart(request):
     user = request.user
     cart_items = CartItem.objects.filter(user=user)
-    return render(request, 'cart.html', {'cart_items': cart_items})
+
+    # Calculate total price
+    total_price = sum(item.quantity * item.coin.rate for item in cart_items)
+
+    for item in cart_items:
+        item.price = item.quantity * item.coin.rate
+    
+    return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
 
 @login_required
 def add_to_cart(request, coin_id):

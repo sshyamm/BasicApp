@@ -16,6 +16,8 @@
                             <th scope="col">#</th>
                             <th scope="col">Coin Name</th>
                             <th scope="col">Quantity</th>
+                            <th scope="col">Rate</th>
+                            <th scope="col">Price</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -34,12 +36,19 @@
                                         <button class="btn btn-outline-success" type="button" onclick="incrementQuantity({{ item.id }})">+</button>
                                     </div>
                                 </div>
-                            </td>                            
+                            </td>
+                            <td>{{ item.coin.rate }}</td>
+                            <td class="price">{{ item.price }}</td>                            
                             <td>
                                 <a href="{% url 'remove_item' item.id %}" class="btn btn-danger btn-sm">Remove</a>
                             </td>
                         </tr>
                         {% endfor %}
+                        <tr>
+                            <td colspan="4" class="font-weight-bold">Total</td>
+                            <td class="font-weight-bold total-price text-center">{{ total_price }}</td>
+                            <td></td>
+                        </tr>
                     </tbody>
                 </table>
                 <div class="text-center">
@@ -57,11 +66,31 @@
 </div>
 
 <script>
+    function updatePrice(itemId) {
+        var quantityInput = document.getElementById('quantity_' + itemId);
+        var priceCell = document.querySelector(`#quantity_${itemId}`).closest('tr').querySelector('.price');
+        var rate = parseFloat(priceCell.previousElementSibling.textContent);
+        var quantity = parseInt(quantityInput.value);
+        var price = rate * quantity;
+        price = price.toFixed(1);
+        priceCell.textContent = price;
+        updateTotalPrice();
+    }
+
+    function updateTotalPrice() {
+        var totalPrice = 0;
+        var priceCells = document.querySelectorAll('.price');
+        priceCells.forEach(function(cell) {
+            totalPrice += parseFloat(cell.textContent);
+        });
+        document.querySelector('.total-price').textContent = totalPrice.toFixed(1);
+    }
     function incrementQuantity(itemId) {
         var inputField = document.getElementById('quantity_' + itemId);
         var currentValue = parseInt(inputField.value);
         if (!isNaN(currentValue)) {
             inputField.value = currentValue + 1;
+            updatePrice(itemId);
         }
     }
 
@@ -70,6 +99,7 @@
         var currentValue = parseInt(inputField.value);
         if (!isNaN(currentValue) && currentValue > 1) {
             inputField.value = currentValue - 1;
+            updatePrice(itemId);
         }
     }
 </script>

@@ -18,7 +18,8 @@ class Coin(models.Model):
     coin_country = models.CharField(max_length=50)  # Char field for coin country
     coin_material = models.CharField(max_length=50)  # Char field for coin material
     coin_weight = models.FloatField()  # Float field for coin weight
-    starting_bid = models.FloatField()  # Float field for starting bid
+    starting_bid = models.FloatField()
+    rate = models.FloatField()  # Float field for starting bid
     coin_status = models.CharField(max_length=50, choices=STATUS_CHOICES)  # Char field with choices for coin status
     created_by_id = models.IntegerField(null=True, blank=True)
 
@@ -43,7 +44,13 @@ class CartItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     coin = models.ForeignKey(Coin, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Set the price to the rate of the associated coin multiplied by the quantity
+        self.price = self.coin.rate * self.quantity
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.quantity} x {self.coin.coin_name} ({self.user.username})"

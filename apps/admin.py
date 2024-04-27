@@ -6,7 +6,7 @@ from django.conf import settings  # Import Django settings module
 @admin.register(Coin)  # Register the Coin model with the admin site
 class CoinAdmin(admin.ModelAdmin):  # Define the admin class for Coin model
     # Specify the fields to display in the list view of the admin site
-    list_display = ('coin_name', 'display_coin_image', 'coin_desc', 'coin_year', 'coin_country', 'coin_material', 'coin_weight', 'starting_bid', 'coin_status', 'created_by_id')
+    list_display = ('coin_name', 'display_coin_image', 'coin_desc', 'coin_year', 'coin_country', 'coin_material', 'coin_weight', 'rate', 'starting_bid', 'coin_status', 'created_by_id')
 
     # Define a method to display the coin image in the list view
     def display_coin_image(self, obj):
