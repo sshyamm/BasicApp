@@ -1,9 +1,10 @@
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404  # Import render function from Django
 from django.urls import reverse
 from rest_framework import status  # Import status codes from Django REST Framework
 from rest_framework.response import Response  # Import Response class from Django REST Framework
 from rest_framework import viewsets  # Import viewsets from Django REST Framework
-from .models import Coin, Profile, SearchHistory, CartItem  # Import the Coin model
+from .models import Coin, Profile, SearchHistory, CartItem, Order, OrderItem, ShippingAddress # Import the Coin model
 from .serializers import CoinSerializer  # Import the CoinSerializer
 from rest_framework.views import APIView
 import re
@@ -18,6 +19,101 @@ from django.urls import reverse
 from .forms import ProfileForm, CoinForm
 from django.db.models import F
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+@login_required
+def order_details(request, order_id):
+    # Retrieve the order object from the database
+    order = get_object_or_404(Order, id=order_id)
+
+    # Retrieve the associated shipping address for the order
+    shipping_address = ShippingAddress.objects.filter(order=order).first()
+
+    # Render the order details page with order and shipping address information
+    return render(request, 'order_details.html', {'order': order, 'shipping_address': shipping_address})
+
+@login_required
+def my_orders(request):
+    # Retrieve orders associated with the current user
+    orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    return render(request, 'my_orders.html', {'orders': orders})
+
+@login_required
+def place_order(request):
+    if request.method == 'POST':
+        user = request.user
+        cart_items = CartItem.objects.filter(user=user)
+
+        # Calculate total price
+        total_price = sum(item.quantity * item.coin.rate for item in cart_items)
+
+        # Create an order
+        order = Order.objects.create(user=user, total_amount=total_price)
+
+        # Create order items
+        for cart_item in cart_items:
+            order_item = OrderItem.objects.create(
+                order=order,
+                coin=cart_item.coin,
+                quantity=cart_item.quantity,
+                rate=cart_item.coin.rate,
+                price=cart_item.price
+            )
+
+        # Save shipping address
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        postal_code = request.POST.get('postal_code')
+        ShippingAddress.objects.create(user=user, order=order, address=address, city=city, state=state, postal_code=postal_code)
+
+        # Clear the cart
+        cart_items.delete()
+
+        request.session['order_placed'] = True
+
+        # Redirect to the thank you page
+        return redirect('apps:thank_you')
+    else:
+        # Handle GET request (if needed)
+        return redirect(reverse('apps:home'))
+
+@login_required
+def thank_you(request):
+    # Check if the user just placed an order (using session or query parameter)
+    if request.session.get('order_placed') or request.GET.get('order_placed'):
+        # Retrieve the most recent order for the current user
+        order = Order.objects.filter(user=request.user).order_by('-order_date').first()
+        
+        # Retrieve the shipping address associated with the order
+        shipping_address = ShippingAddress.objects.filter(user=request.user).order_by('-id').first()
+
+        request.session.pop('order_placed', None)
+        
+        return render(request, 'thank_you.html', {'order': order, 'shipping_address': shipping_address})
+    else:
+        # Redirect the user to the home page or any other appropriate page
+        return redirect(reverse('apps:home'))
+
+@login_required
+def checkout_view(request):
+    if request.method == 'POST':
+        user = request.user
+        cart_items = CartItem.objects.filter(user=user)
+
+        # Calculate total price
+        total_price = sum(item.quantity * item.coin.rate for item in cart_items)
+
+        for item in cart_items:
+            item.price = item.quantity * item.coin.rate
+
+        if cart_items:
+            return render(request, 'order_confirmation.html', {'cart_items': cart_items})
+        else:
+            # Redirect to the home page if the cart is empty
+            return redirect(reverse('apps:home'))
+    else:
+        # Handle GET request (if needed)
+        return redirect(reverse('apps:home'))
 
 @login_required
 def save_changes(request):
@@ -51,10 +147,24 @@ def cart(request):
     # Calculate total price
     total_price = sum(item.quantity * item.coin.rate for item in cart_items)
 
+    # Update item prices
     for item in cart_items:
         item.price = item.quantity * item.coin.rate
-    
+
+    # Store cart data in session
+    cart_data = []
+    for item in cart_items:
+        cart_data.append({
+            'coin_id': item.coin.coin_id,
+            'quantity': item.quantity,
+            'rate': item.coin.rate,
+            'price': item.price
+        })
+    request.session['cart'] = cart_data
+
+    # Render the cart page with cart items and total price
     return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
+
 
 @login_required
 def add_to_cart(request, coin_id):
@@ -206,7 +316,6 @@ def clear_search_history(request, search_history_id):
     if search_history_item.user == request.user:
         # Delete the search history item
         search_history_item.delete()
-        messages.success(request, 'Search history item deleted successfully!')
     else:
         messages.error(request, 'You do not have permission to delete this search history item.')
 

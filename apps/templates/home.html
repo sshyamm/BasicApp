@@ -33,7 +33,13 @@
         <div class="alert alert-info" role="alert">
             <strong>Search History:</strong>
             {% for item in search_history %}
-            <span class="badge bg-warning text-dark">{{ item.search_text }} <a href="{% url 'apps:clear_search_history' search_history_id=item.id %}" class="btn btn-danger btn-sm">X</a></span><span>&nbsp;</span>
+            <span class="badge bg-warning text-dark" style="font-size: small;">
+                {{ item.search_text }} 
+                <a href="{% url 'apps:clear_search_history' search_history_id=item.id %}">
+                    <i class="bi bi-x"></i>
+                </a>
+            </span>
+            <span>&nbsp;</span>            
             {% endfor %}
         </div>
         {% endif %}

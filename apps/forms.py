@@ -36,5 +36,5 @@ class ProfileForm(forms.ModelForm):
 class CoinForm(forms.ModelForm):
     class Meta:
         model = Coin
-        fields = ['coin_image', 'coin_name', 'coin_desc', 'coin_year', 'coin_country', 'coin_material', 'coin_weight', 'starting_bid', 'coin_status']
+        fields = ['coin_image', 'coin_name', 'coin_desc', 'coin_year', 'coin_country', 'coin_material', 'coin_weight', 'starting_bid', 'rate', 'coin_status']
 
