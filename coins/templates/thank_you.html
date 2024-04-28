@@ -1,0 +1,51 @@
+<!-- thank_you.html -->
+{% extends "base.html" %}
+{% load bootstrap4 %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 font-weight-bold text-center">Thank You for Your Order!</h1>
+    <p class="lead text-center">Your order has been successfully placed.</p>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Order Invoice</h5>
+            <p><strong>Order ID:</strong> {{ order.id }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+            <p class="text-danger font-weight-bold"><strong>Total Amount:</strong> {{ order.total_amount }}</p>
+            <p><strong>Shipment Status :</strong> {{ order.status }}</p>
+            <hr>
+            <h5 class="card-title">Shipping Address</h5>
+            <p><strong>Address:</strong> {{ shipping_address.address }}</p>
+            <p><strong>City:</strong> {{ shipping_address.city }}</p>
+            <p><strong>State:</strong> {{ shipping_address.state }}</p>
+            <p><strong>Postal Code:</strong> {{ shipping_address.postal_code }}</p>
+            <hr>
+            <h5 class="card-title">Ordered Items</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.orderitem_set.all %}
+                    <tr>
+                        <td>{{ item.coin.coin_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <span>&nbsp;</span>
+    <div class="text-center">
+        <a href="{% url 'coins:home' %}" class="btn btn-secondary">Go To Home</a>
+        <a href="{% url 'coins:my_orders' %}" class="btn btn-warning">My Orders</a>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from apps.views import CoinViewSet, CoinSearchView, coins_table, coin_details, edit_coin, add_to_cart, cart, remove_item, save_changes
+from coins.views import CoinViewSet, CoinSearchView, coins_table, coin_details, edit_coin, add_to_cart, cart, remove_item, save_changes
 
 # Create a router for registering viewsets
 router = routers.DefaultRouter()
@@ -41,7 +41,7 @@ urlpatterns = [
     path('cart/', cart, name='cart'),
     path('remove_item/<int:item_id>/', remove_item, name='remove_item'),
     path('save_changes/', save_changes, name='save_changes'),
-    path("", include(("apps.urls", "apps"), "apps")),
+    path("", include(("coins.urls", "coins"), "coins")),
 ] 
 # Serve media files in DEBUG mode
 if settings.DEBUG:

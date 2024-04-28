@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps',
+    'coins',
     'rest_framework',
     'django_filters',
     'bootstrap4',
@@ -51,10 +51,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-context_processors: [
-    'django.contrib.messages.context_processors.messages',
 ]
 
 ROOT_URLCONF = 'BasicProject.urls'
@@ -87,7 +83,8 @@ DATABASES = {
         'ENFORCE_SCHEMA': False,  # Set this to True to enforce MongoDB schema validation
         'CLIENT': {
             'host': 'mongodb://localhost:27017/',
-        }
+        },
+        'NAME': 'our_market',  # Specify your desired database name here
     }
 }
 
@@ -135,6 +132,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-LOGIN_REDIRECT_URL = "apps:home"
-LOGOUT_REDIRECT_URL = "apps:login"
-PASSWORD_CHANGE_DONE_REDIRECT_URL = "apps:password_change_done"
+LOGIN_REDIRECT_URL = "coins:home"
+LOGOUT_REDIRECT_URL = "coins:login"
+PASSWORD_CHANGE_DONE_REDIRECT_URL = "coins:password_change_done"
